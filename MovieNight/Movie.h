@@ -23,13 +23,3 @@ typedef	struct movie
 	std::string imgPath;
 }MOVIE;
 
-static void ParseTittle(std::string* str)
-{
-	if(str->find("(") != -1)
-		str->erase(str->find(" ("), str->find(")"));
-
-	std::string space = "%20";
-
-	while (str->find(" ") != -1)
-		str->replace(str->find(" "), 1, space);
-}

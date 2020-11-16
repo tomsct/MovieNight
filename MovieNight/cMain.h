@@ -4,6 +4,7 @@
 #include "Movie.h"
 #include "WebService.h"
 #include "cThread.h"
+#include "Queries.h"
 #include <filesystem>	
 #include <algorithm>
 #include <map>

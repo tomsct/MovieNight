@@ -58,25 +58,8 @@ bool WebService::DownloadImage(std::string url, std::string path)
     return false;
 }
 
-rapidjson::Document WebService::ParseRequest(std::string json)
+std::string WebService::GetJson(std::string query)
 {
-    rapidjson::Document document;
-    document.Parse(json.c_str());
-
-    return document;
-}
-
-std::string WebService::GetJson(std::string movieTitle, bool isArray)
-{
-    std::string query = serverNameOMDB + "/?apikey=" + keyOMDB;
-
-    ParseTittle(&movieTitle);
-
-    if (isArray)
-        query += "&s=" + movieTitle;
-    else
-        query += "&t=" + movieTitle;
-
     std::string json;
 
     if (!WebService::DownloadString(query, json))
@@ -85,24 +68,14 @@ std::string WebService::GetJson(std::string movieTitle, bool isArray)
     return json;
 }
 
-void WebService::ParseArray(rapidjson::Document json, std::map<std::string, movie>* m_movies)
+bool WebService::ValidateJson(rapidjson::Document& json)
 {
     if (!strcmp(json["Response"].GetString(), "False"))
     {
         ShowError(json["Error"].GetString());
-        return;
+        return false;
     }
-
-    const rapidjson::Value& attributes = json["Search"];
-    
-    for (rapidjson::Value::ConstValueIterator itr = attributes.Begin(); itr != attributes.End(); ++itr)
-    {
-        const rapidjson::Value& attribute = *itr;
-        MOVIE movie;
-        movie.Title = (*itr)["Title"].GetString();
-        movie.imgPath = "./tmp.jpg";
-        m_movies->insert(std::pair<std::string, MOVIE>(movie.Title, movie));
-    }
+    return true;
 }
 
 void WebService::ShowError(std::string response)

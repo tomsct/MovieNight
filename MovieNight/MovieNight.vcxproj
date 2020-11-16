@@ -24,6 +24,8 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="cThread.h" />
     <ClInclude Include="Movie.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="Queries.h" />
     <ClInclude Include="WebService.h" />
   </ItemGroup>
   <ItemGroup>

@@ -85,16 +85,19 @@ void cMain::OnButtonSearchClicked(wxCommandEvent& evt)
 	{
 		m_movies->clear();
 
-		std::string movieTitle = m_txtbox_search->GetValue().ToStdString();
-
-		std::string json = WebService::GetJson(movieTitle, true);
+		std::string json = WebService::GetJson( getMoviesQuery + ParseSpaces(m_txtbox_search->GetValue().ToStdString()));
 
 		if (json == "")return;
 
-		WebService::ParseArray(WebService::ParseRequest(json), m_movies);
+		rapidjson::Document document = ParseRequest(json);
+		
+		if (WebService::ValidateJson(document))
+		{
+			ParseArray(document, m_movies);
 
-		for (auto it = m_movies->begin(); it != m_movies->end(); ++it)
-			m_list_movies->AppendString(it->second.Title);
+			for (auto it = m_movies->begin(); it != m_movies->end(); ++it)
+				m_list_movies->AppendString(it->second.Title);
+		}
 	}
 	else
 	{
@@ -131,20 +134,23 @@ void cMain::SelectItem(unsigned int index)
 	{
 		std::string movieTitle = m_list_movies->GetString(index).ToStdString();
 
-		std::string json = WebService::GetJson(movieTitle, false);
+		std::string json = WebService::GetJson( getMovieQuery + ParseSpaces(movieTitle));
 
 		if (json == "")return;
 
-		rapidjson::Document movieInfo = WebService::ParseRequest(json);
+		rapidjson::Document movieInfo = ParseRequest(json);
 
-		m_stxt_title->SetLabel(movieInfo["Title"].GetString());
+		if (WebService::ValidateJson(movieInfo))
+		{
+			m_stxt_title->SetLabel(movieInfo["Title"].GetString());
 
-		std::string path(m_movies->at(movieTitle).imgPath);
+			std::string path(m_movies->at(movieTitle).imgPath);
 
-		if (!std::filesystem::exists(path) || path == "./tmp.jpg")
-			if (!WebService::DownloadImage(movieInfo["Poster"].GetString(), path))
-				path = "./404notfound.jpg";
+			if (!std::filesystem::exists(path) || path == "./tmp.jpg")
+				if (!WebService::DownloadImage(movieInfo["Poster"].GetString(), path))
+					path = "./404notfound.jpg";
 
-		m_sbitmap_movie->SetBitmap(wxImage(path).Rescale(182, 268));
+			m_sbitmap_movie->SetBitmap(wxImage(path).Rescale(182, 268));
+		}
 	}
 }
