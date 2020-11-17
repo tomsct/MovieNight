@@ -70,9 +70,14 @@ std::string WebService::GetJson(std::string query)
 
 bool WebService::ValidateJson(rapidjson::Document& json)
 {
-    if (!strcmp(json["Response"].GetString(), "False"))
+    if (json.HasMember("Response") && !strcmp(json["Response"].GetString(), "False"))
     {
         ShowError(json["Error"].GetString());
+        return false;
+    }
+    else if (json.HasMember("total_results") && json["total_results"].GetInt() == 0)
+    {
+        ShowError("Person not found");
         return false;
     }
     return true;

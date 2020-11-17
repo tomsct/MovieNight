@@ -32,10 +32,10 @@ private:
 	wxButton* m_btn_load = nullptr;
 	wxButton* m_btn_search = nullptr;
 
-	wxCheckBox* m_chkbox_serie = nullptr;
-	wxCheckBox* m_chkbox_person = nullptr;
+	wxRadioButton* m_rd_btn_serie = nullptr;
+	wxRadioButton* m_rd_btn_person = nullptr;
 
-	wxCheckBox* m_chkbox_omdb = nullptr;
+	wxRadioButton* m_rd_btn_omdb = nullptr;
 	wxTextCtrl* m_txtbox_search = nullptr;
 
 	wxListBox* m_list_movies = nullptr;
@@ -50,6 +50,7 @@ private:
 	void OnRightClickOnListBox(wxMouseEvent& evt);
 	void OnItemSelected(wxCommandEvent& evt);
 	void OnThreadEnd(wxCommandEvent& evt);
+	void OnCheckBoxClicked(wxCommandEvent& evt);
 
 	wxDECLARE_EVENT_TABLE();
 };

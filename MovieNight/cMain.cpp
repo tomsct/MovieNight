@@ -26,10 +26,11 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Main", wxPoint(30, 30),wxSize(800, 
 	m_btn_load = new wxButton(this, BUTTON_LOAD, "LOAD", wxPoint(10, 10), wxSize(150, 50));
 	m_btn_search = new wxButton(this, BUTTON_SEARCH, "SEARCH", wxPoint(170, 10), wxSize(150, 50));
 
-	m_chkbox_serie = new wxCheckBox(this, CHECKBOX_SERIE, "SERIE", wxPoint(350, 50), wxSize(60, 50));
-	m_chkbox_person = new wxCheckBox(this, wxID_ANY, "PERSON", wxPoint(350, 90), wxSize(100, 50));
+	m_rd_btn_omdb = new wxRadioButton(this, RADIOBUTTON_OMDB, "OMDB", wxPoint(350, 10), wxSize(60, 50), wxRB_GROUP);
 
-	m_chkbox_omdb = new wxCheckBox(this, CHECKBOX_SEARCH, "OMDB", wxPoint(350, 10), wxSize(60, 50));
+	m_rd_btn_serie = new wxRadioButton(this, RADIOBUTTON_SERIE, "SERIE", wxPoint(350, 50), wxSize(60, 50));
+	m_rd_btn_person = new wxRadioButton(this, RADIOBUTTON_PERSON, "PERSON", wxPoint(350, 90), wxSize(100, 50));
+
 	m_txtbox_search = new wxTextCtrl(this, TEXTBOX_SEARCH, "", wxPoint(10, 70), wxSize(300, 30));
 
 	m_list_movies = new wxListBox(this, LISTBOX_MOVIES, wxPoint(10, 110), wxSize(300, 500));
@@ -81,11 +82,11 @@ void cMain::OnButtonLoadClicked(wxCommandEvent& evt)
 void cMain::OnButtonSearchClicked(wxCommandEvent& evt)
 {	
 	m_list_movies->Clear();
-	if (m_chkbox_omdb->IsChecked())
+	if (m_rd_btn_omdb->GetValue())
 	{
 		m_movies->clear();
 
-		std::string json = WebService::GetJson( getMoviesQuery + ParseSpaces(m_txtbox_search->GetValue().ToStdString()));
+		std::string json = WebService::GetJson(getMoviesQuery + ParseSpaces(m_txtbox_search->GetValue().ToStdString()));
 
 		if (json == "")return;
 
@@ -97,6 +98,20 @@ void cMain::OnButtonSearchClicked(wxCommandEvent& evt)
 
 			for (auto it = m_movies->begin(); it != m_movies->end(); ++it)
 				m_list_movies->AppendString(it->second.Title);
+		}
+	}
+	else if (m_rd_btn_person->GetValue())
+	{
+		std::string json = WebService::GetJson(getPersonQuery + ParseSpaces(m_txtbox_search->GetValue().ToStdString()));
+
+		if (json == "")return;
+
+		rapidjson::Document document = ParseRequest(json);
+
+		if (WebService::ValidateJson(document))
+		{
+			WebService::DownloadImage(getPersonImage + document["results"][0]["profile_path"].GetString(), "./tmp.jpg");
+			m_sbitmap_movie->SetBitmap(wxImage("./tmp.jpg").Rescale(182, 268));
 		}
 	}
 	else
