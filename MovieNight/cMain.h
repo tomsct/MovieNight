@@ -20,7 +20,7 @@ public:
 
 private:
 	std::string m_path = "./Movies";
-	std::map<std::string , MOVIE>* m_movies = nullptr;
+	std::map<std::string , Movie>* m_movies = nullptr;
 
 private:
 	wxMenuBar* m_menu_bar = nullptr;

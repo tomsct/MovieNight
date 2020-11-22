@@ -13,3 +13,5 @@ const std::string getMoviesQuery = serverNameOMDB + "/?apikey=" + keyOMDB + "&ty
 
 const std::string getPersonQuery = serverNameTMDB + "/3/search/person?api_key=" + keyTMDB + "&query=";
 const std::string getPersonImage = serverImageTMDB + "/t/p/original";
+
+const std::string getPersonFilmography = serverNameTMDB + "/3/person/";

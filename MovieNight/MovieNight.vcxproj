@@ -32,6 +32,7 @@
     <ClCompile Include="cApp.cpp" />
     <ClCompile Include="cMain.cpp" />
     <ClCompile Include="cThread.cpp" />
+    <ClCompile Include="Movie.cpp" />
     <ClCompile Include="WebService.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

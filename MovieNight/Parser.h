@@ -5,24 +5,28 @@
 #include "document.h"
 #include "Movie.h"
 
-static void ParseArray(rapidjson::Document& json, std::map<std::string, movie>* m_movies)
+static void ParseArray(rapidjson::Document& json, std::map<std::string, Movie>* m_movies)
 {
     const rapidjson::Value& attributes = json["Search"];
 
     for (rapidjson::Value::ConstValueIterator itr = attributes.Begin(); itr != attributes.End(); ++itr)
     {
         const rapidjson::Value& attribute = *itr;
-        MOVIE movie;
-        movie.Title = (*itr)["Title"].GetString();
-        movie.imgPath = "./tmp.jpg";
-        m_movies->insert(std::pair<std::string, MOVIE>(movie.Title, movie));
+        Movie movie;
+        movie.SetTitle((*itr)["Title"].GetString());
+        movie.SetImgPath("./tmp.jpg");
+        m_movies->insert(std::pair<std::string, Movie>(movie.GetTitle(), movie));
     }
 }
     
 static rapidjson::Document ParseRequest(std::string json)
 {
     rapidjson::Document document;
-    document.Parse(json.c_str());
+
+    if (json.empty())
+        document.Parse("{}");
+    else
+        document.Parse(json.c_str());
 
     return document;
 }

@@ -70,7 +70,12 @@ std::string WebService::GetJson(std::string query)
 
 bool WebService::ValidateJson(rapidjson::Document& json)
 {
-    if (json.HasMember("Response") && !strcmp(json["Response"].GetString(), "False"))
+    if (json == "{}")
+    {
+        ShowError("Empy Json");
+        return false;
+    }
+    else if (json.HasMember("Response") && !strcmp(json["Response"].GetString(), "False"))
     {
         ShowError(json["Error"].GetString());
         return false;

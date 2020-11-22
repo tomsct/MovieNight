@@ -7,7 +7,7 @@ wxBEGIN_EVENT_TABLE(cMain, wxFrame)
 	EVT_LISTBOX(LISTBOX_MOVIES, OnItemSelected)
 END_EVENT_TABLE()
 
-cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Main", wxPoint(30, 30),wxSize(800, 600))
+cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Main", wxPoint(30, 30),wxSize(1280, 720), wxDEFAULT_FRAME_STYLE & ~wxRESIZE_BORDER)
 {
 	// Menu Initalization	
 	m_menu_bar = new wxMenuBar;
@@ -40,7 +40,7 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Main", wxPoint(30, 30),wxSize(800, 
 	
 	m_stxt_title = new wxStaticText(this, TEXT_TITLE, "title", wxPoint(500, 50), wxSize(182, 50), wxALIGN_CENTRE_HORIZONTAL);
 
-	m_movies = new std::map<std::string, MOVIE>;
+	m_movies = new std::map<std::string, Movie>;
 
 	wxCommandEvent wxEVT_COMMAND_BUTTON_CLICKED;
 
@@ -69,10 +69,10 @@ void cMain::OnButtonLoadClicked(wxCommandEvent& evt)
 	m_movies->clear();
 	for (const auto& entry : std::filesystem::directory_iterator(m_path))
 	{
-		MOVIE movie;
-		movie.imgPath = m_path + "/" + entry.path().filename().string() + "/" + entry.path().filename().string() + ".jpg";
-		movie.Title = entry.path().filename().string();
-		m_movies->insert(std::pair<std::string, MOVIE>(movie.Title, movie));
+		Movie movie;
+		movie.SetImgPath(m_path + "/" + entry.path().filename().string() + "/" + entry.path().filename().string() + ".jpg");
+		movie.SetTitle(entry.path().filename().string());
+		m_movies->insert(std::pair<std::string, Movie>(movie.GetTitle(), movie));
 		m_list_movies->AppendString(entry.path().filename().string());
 	}
 	SelectItem(0);
@@ -86,39 +86,34 @@ void cMain::OnButtonSearchClicked(wxCommandEvent& evt)
 	{
 		m_movies->clear();
 
-		std::string json = WebService::GetJson(getMoviesQuery + ParseSpaces(m_txtbox_search->GetValue().ToStdString()));
-
-		if (json == "")return;
-
-		rapidjson::Document document = ParseRequest(json);
+		rapidjson::Document document = ParseRequest(WebService::GetJson(getMoviesQuery + ParseSpaces(m_txtbox_search->GetValue().ToStdString())));
 		
 		if (WebService::ValidateJson(document))
 		{
 			ParseArray(document, m_movies);
 
 			for (auto it = m_movies->begin(); it != m_movies->end(); ++it)
-				m_list_movies->AppendString(it->second.Title);
+				m_list_movies->AppendString(it->second.GetTitle());
 		}
 	}
 	else if (m_rd_btn_person->GetValue())
 	{
-		std::string json = WebService::GetJson(getPersonQuery + ParseSpaces(m_txtbox_search->GetValue().ToStdString()));
-
-		if (json == "")return;
-
-		rapidjson::Document document = ParseRequest(json);
+		rapidjson::Document document = ParseRequest(WebService::GetJson(getPersonQuery + ParseSpaces(m_txtbox_search->GetValue().ToStdString())));
 
 		if (WebService::ValidateJson(document))
 		{
 			WebService::DownloadImage(getPersonImage + document["results"][0]["profile_path"].GetString(), "./tmp.jpg");
+
+			m_stxt_title->SetLabel(document["results"][0]["name"].GetString());
+
 			m_sbitmap_movie->SetBitmap(wxImage("./tmp.jpg").Rescale(182, 268));
 		}
 	}
 	else
 	{
 		for (auto it = m_movies->begin(); it != m_movies->end(); ++it)
-			if ((*it).second.Title.find(m_txtbox_search->GetValue()) != std::string::npos)
-				m_list_movies->AppendString((*it).second.Title);
+			if ((*it).second.GetTitle().find(m_txtbox_search->GetValue()) != std::string::npos)
+				m_list_movies->AppendString((*it).second.GetTitle());
 	}
 	evt.Skip();
 }
@@ -149,17 +144,13 @@ void cMain::SelectItem(unsigned int index)
 	{
 		std::string movieTitle = m_list_movies->GetString(index).ToStdString();
 
-		std::string json = WebService::GetJson( getMovieQuery + ParseSpaces(movieTitle));
-
-		if (json == "")return;
-
-		rapidjson::Document movieInfo = ParseRequest(json);
+		rapidjson::Document movieInfo = ParseRequest(WebService::GetJson(getMovieQuery + ParseSpaces(movieTitle)));
 
 		if (WebService::ValidateJson(movieInfo))
 		{
 			m_stxt_title->SetLabel(movieInfo["Title"].GetString());
 
-			std::string path(m_movies->at(movieTitle).imgPath);
+			std::string path(m_movies->at(movieTitle).GetImgPath());
 
 			if (!std::filesystem::exists(path) || path == "./tmp.jpg")
 				if (!WebService::DownloadImage(movieInfo["Poster"].GetString(), path))
